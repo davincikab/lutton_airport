@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Display a map on a webpage</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<style>
+    body { margin: 0; padding: 0; }
+    #map { height: 100vh; width: 100%; z-index: 0; }
+    .side-section {
+        position: absolute;
+        top: 10%;
+        left: 5%;
+        width: 300px;
+        min-height: 40vh;
+        z-index: 2;
+        box-shadow: 0px 0px 0.3rem #555;
+        background-color: white;
+        border-radius: 4px;
+    }
+
+    .section-header {
+        padding:0.5rem 0;
+        border-bottom: 1px solid #555;
+    }
+    .section-header h5 {
+        font-size: 1.2rem;
+        margin:0;
+        text-align: center;
+    }
+
+    ul {
+        padding: 0;
+        list-style: none;
+    }
+
+    li {
+        padding: 12px 14px;
+        position: relative;
+        margin: 0px;
+        display: flex;
+        flex-direction: row;
+        -webkit-box-align: center;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .list-item:hover {
+        background-color: #e282ccd2;
+    }
+
+    .list-item.active {
+        background-color: #e282ccd2;
+    }
+
+    .item-title {
+        display: block;
+        margin-left: 12px;
+        color: rgb(51, 51, 51);
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 150%;
+    }
+
+    .list-item > * {
+        pointer-events: none;
+    }
+
+    .list-item .icon {
+        background-color: #15c1c7;
+        color:white;
+        border-radius: 50%;
+        height: 30px;
+        width: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .div-marker img {
+        width: 32px;
+    }
+
+    .div-marker.bg-marker {
+        background-color: white;
+        padding:0.375rem 0.375rem;
+        box-shadow: 0px 0px 0.3em #333;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .div-marker.bg-marker img {
+        width: 20px;
+        height: 20px;
+    }
+
+    @media screen and (max-width:480px) {
+        .side-section {
+            bottom: 0;
+            left: 0;
+            top:auto
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="map-wrapper">
+        <div id="map">
+        </div>
+
+        <div class="side-section">
+            <div class="section-header">
+                <h5>AIRPORT FEATURES</h5>
+            </div>
+            <ul class="list-type">
+                <li class="list-item" data-type="eat">
+                    <div class="icon">
+                        <i class="fa fa-utensils"></i>
+                    </div>
+                    <span class="item-title">Eat</span>
+                </li>
+
+                <li class="list-item" data-type="service">
+                    <div class="icon">
+                        <i class="fa fa-user-group"></i>
+                    </div>
+                    <span class="item-title">Services</span>
+                </li>
+
+                <li class="list-item" data-type="transit">
+                    <div class="icon">
+                        <i class="fa fa-bus"></i>
+                    </div>
+                    <span class="item-title">Transit</span>
+                </li>
+
+                <li class="list-item" data-type="parking">
+                    <div class="icon">
+                        <i class="fa fa-square-parking"></i>
+                    </div>
+                    <span class="item-title">Parking</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+<script>
+	mapboxgl.accessToken = 'pk.eyJ1IjoiZGF1ZGk5NyIsImEiOiJjanJtY3B1bjYwZ3F2NGFvOXZ1a29iMmp6In0.9ZdvuGInodgDk7cv-KlujA';
+    const map = new mapboxgl.Map({
+        container: 'map', // container ID
+        style: 'mapbox://styles/mapbox/streets-v11', // style URL
+        center: {lng: -0.3757204731031436, lat: 51.88007687449627}, // starting position [lng, lat]
+        zoom: 16.3 // starting zoom
+    });
+
+    // 
+    const markerTypes = {
+        eat:['bar', 'pub' ,'restaurant', 'cafe', 'fast_food', 'lounge'],
+        transit:['bus_station', 'car_rental', 'taxi', 'train'],
+        parking:['bicycle_parking', 'parking'],
+        service:['bureau_de_change', 'atm', 'toilets', 'post_box']
+    };
+
+    const bgMarkers = ['atm', 'toilets', 'bicycle_parking'];
+    map.on('load', function() {
+        map.addSource('airport', {
+            type:'geojson',
+            data:'data/airport.geojson'
+        });
+
+        map.addLayer({
+            id:'airport-fill',
+            type:'fill',
+            source:'airport',
+            paint:{
+                'fill-color':'#9ebcd8',
+                'fill-opacity':0.8
+            }
+        });
+
+        map.addLayer({
+            id:'airport-line',
+            type:'line',
+            source:'airport',
+            paint:{
+                'line-color':'#fe01c1',
+                'line-width':1
+            }
+        });
+
+        // add data points
+        map.addSource('point-source', {
+            type:'geojson',
+            data:'data/point_data.geojson'
+        });
+
+        map.addLayer({
+            id:'gates',
+            source:'point-source',
+            type:'symbol',
+            paint:{
+                'text-color':'#333'
+            },
+            layout:{
+                'text-field':['get','ref'],
+                'text-size':10
+
+            }
+        });
+
+        fetch("data/point_data.geojson")
+        .then(res => res.json())
+        .then(data => {
+            console.log(data);
+
+            let layerToggler = new LayerToggler(data.features);
+            layerToggler.init();
+        })
+        .catch(console.error)
+    });
+
+    // clicking the feature types
+    const LayerToggler = function(data) {
+        this.activeItem = null;
+        this.listItems = document.querySelectorAll('.list-item');
+        this.init = () => {
+            this.fireToggleListener();
+            this.markerData = data;
+        }
+
+        this.fireToggleListener = () => {
+            this.listItems.forEach(element => {
+                element.onclick = (e) => this.eventListener(e)
+            });
+
+        }
+
+        this.eventListener = (e) => {
+            let { dataset } = e.target;
+            console.log(dataset);
+
+            let { type } = dataset;
+
+            if(this.activeItem) {
+                this.toggleActiveItem(this.activeItem)
+            }
+
+            this.activeItem = e.target;
+            this.toggleActiveItem(this.activeItem);
+            this.togglerMarkers(type);
+
+        }
+
+        this.togglerMarkers = (type) => {
+            let types = markerTypes[type];
+            let markerData = this.markerData.filter(feature => types.indexOf(feature.properties.amenity) != -1);
+
+            MarkerObj.updateMarkers(markerData);
+        }
+
+        this.toggleActiveItem = (item) => {
+            if(item.classList.contains('active')) {
+                item.classList.remove('active');
+            } else {
+                item.classList.add('active')
+            }
+        }
+    }
+
+    // add markers
+    const MarkerObj = {
+        updateMarkers: function(features) {
+            if(this.markers) this.clearMarkers();
+            this.createMarkers(features);
+        },
+
+        createMarkers: function(features) {
+            this.markers = features.map(feature => {
+                let marker = this.createMarker(feature);
+                return marker;
+            });
+        },
+
+        createMarker: function(feature) {
+            let el = this.getMarkerElement(feature);
+            return new mapboxgl.Marker({element:el})
+                .setLngLat([...feature.geometry.coordinates[0]])
+                .addTo(map);
+        },
+
+        getMarkerElement:function(feature) {
+            let field = feature.properties.amenity;
+
+            let divMarker = document.createElement('div');
+            divMarker.className = bgMarkers.includes(field) ? "div-marker bg-marker" : "div-marker";
+
+            divMarker.innerHTML = `<img src="img/${field}.png" alt="${field}" />`;
+            return divMarker;
+        },
+
+        clearMarkers: function() {
+            this.markers.forEach(marker => marker.remove());
+        }
+    }
+    
+</script>
+
+</body>
+</html>

@@ -99,11 +99,47 @@
         height: 20px;
     }
 
+    .toggle-btn {
+        position: absolute;
+        width: 30px;
+        height: auto;
+        top:3%;
+        right:-6%;
+        font-size: 1.4rem;
+        border-radius: 5px;
+        background-color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.25rem 0.25rem;
+        box-shadow: 0px 0px 0.3rem #555;
+        mix-blend-mode: color-dodge;
+        cursor: pointer;
+        display: none;
+    }
+
     @media screen and (max-width:480px) {
         .side-section {
             bottom: 0;
             left: 0;
-            top:auto
+            top:auto;
+            transition: 0.6s left;
+        }
+
+        .side-section.close {
+            left:-300px;
+        }
+
+        .toggle-btn {
+            display: block;
+        }
+
+        .toggle-btn > * {
+            pointer-events: none;
+        }
+
+        .toggle-btn i {
+            margin-left: 1rem;
         }
     }
 </style>
@@ -113,7 +149,11 @@
         <div id="map">
         </div>
 
-        <div class="side-section">
+        <div class="side-section close" id="side-section">
+            <div class="toggle-btn" id="toggle-btn">
+                <i class="fa fa-caret-left"></i>
+            </div>
+
             <div class="section-header">
                 <h5>AIRPORT FEATURES</h5>
             </div>
@@ -305,6 +345,14 @@
         clearMarkers: function() {
             this.markers.forEach(marker => marker.remove());
         }
+    }
+
+
+    let toggleBtn = document.getElementById("toggle-btn");
+    let sideSection = document.getElementById("side-section");
+
+    toggleBtn.onclick = function(e) {
+        sideSection.classList.toggle('close');
     }
     
 </script>
